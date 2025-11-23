@@ -1,36 +1,52 @@
+@echo off
+setlocal
+
+REM === Configure output folder here ===
+REM Change this to whatever path you want:
+set "OUTNAME=sioyek-release-windows"
+set "SCRIPT_DIR=%~dp0"
+
+set "OUTDIR=%SCRIPT_DIR%..\build\%OUTNAME%"
+
 cd mupdf\platform\win32\
-msbuild mupdf.sln /property:Configuration=Debug
-msbuild mupdf.sln /property:Configuration=Release
+msbuild mupdf.sln /property:Configuration=Debug 
+REM msbuild mupdf.sln /property:Configuration=Release
 cd ..\..\..
 
 cd zlib
 nmake -f win32/makefile.msc
 cd ..
 
-if %1 == portable (
+if /I "%~1"=="portable" (
     qmake -tp vc pdf_viewer_build_config.pro
 ) else (
     qmake -tp vc "DEFINES+=NON_PORTABLE" pdf_viewer_build_config.pro
 )
 
-msbuild -maxcpucount sioyek.vcxproj /property:Configuration=Release
-rm -r sioyek-release-windows 2> NUL
-mkdir sioyek-release-windows
-cp release\sioyek.exe sioyek-release-windows\sioyek.exe
-cp pdf_viewer\keys.config sioyek-release-windows\keys.config
-cp pdf_viewer\prefs.config sioyek-release-windows\prefs.config
-cp -r pdf_viewer\shaders sioyek-release-windows\shaders
-cp tutorial.pdf sioyek-release-windows\tutorial.pdf
-windeployqt sioyek-release-windows\sioyek.exe
-cp windows_runtime\vcruntime140_1.dll sioyek-release-windows\vcruntime140_1.dll
-cp windows_runtime\libssl-1_1-x64.dll sioyek-release-windows\libssl-1_1-x64.dll
-cp windows_runtime\libcrypto-1_1-x64.dll sioyek-release-windows\libcrypto-1_1-x64.dll
+msbuild -maxcpucount sioyek.vcxproj /property:Configuration=Debug /property:Platform=x64
+@REM msbuild -maxcpucount sioyek.vcxproj /property:Configuration=Release
 
-if %1 == portable (
-    cp pdf_viewer\keys_user.config sioyek-release-windows\keys_user.config
-    cp pdf_viewer\prefs_user.config sioyek-release-windows\prefs_user.config
-    7z a sioyek-release-windows-portable.zip sioyek-release-windows
+REM Recreate output directory
+rmdir /S /Q "%OUTDIR%" 2>NUL
+mkdir "%OUTDIR%" 2>NUL
 
+REM Copy build artifacts
+copy /Y release\sioyek.exe "%OUTDIR%\sioyek.exe"
+copy /Y pdf_viewer\keys.config "%OUTDIR%\keys.config"
+copy /Y pdf_viewer\prefs.config "%OUTDIR%\prefs.config"
+xcopy /E /I /Y pdf_viewer\shaders "%OUTDIR%\shaders\"
+copy /Y tutorial.pdf "%OUTDIR%\tutorial.pdf"
+windeployqt "%OUTDIR%\sioyek.exe"
+copy /Y windows_runtime\vcruntime140_1.dll "%OUTDIR%\vcruntime140_1.dll"
+copy /Y windows_runtime\libssl-1_1-x64.dll "%OUTDIR%\libssl-1_1-x64.dll"
+copy /Y windows_runtime\libcrypto-1_1-x64.dll "%OUTDIR%\libcrypto-1_1-x64.dll"
+
+if /I "%~1"=="portable" (
+    copy /Y pdf_viewer\keys_user.config "%OUTDIR%\keys_user.config"
+    copy /Y pdf_viewer\prefs_user.config "%OUTDIR%\prefs_user.config"
+    7z a "%OUTNAME%-portable.zip" "%OUTDIR%"
 ) else (
-    7z a sioyek-release-windows.zip sioyek-release-windows
+    7z a "%OUTNAME%.zip" "%OUTDIR%"
 )
+
+endlocal
