@@ -574,11 +574,13 @@ MainWidget* handle_args(const QStringList& arguments) {
 	}
 
 	if (should_create_new_window) {
+		std::cout << "DEBUG: Creating new window (total windows before: " << windows.size() << ")" << std::endl;
 		target_window = new MainWidget(windows[0]);
 		target_window->run_multiple_commands(STARTUP_COMMANDS);
 		target_window->apply_window_params_for_one_window_mode(true);
 		target_window->show();
 		windows.push_back(target_window);
+		std::cout << "DEBUG: New window created and shown (total windows now: " << windows.size() << ")" << std::endl;
 	}
 	if (target_window == nullptr) {
 		target_window = windows[0];
@@ -664,12 +666,18 @@ int main(int argc, char* args[]) {
 		return 0;
 	}
 
+	// Enable Qt debug logging for OpenGL
+	qputenv("QT_LOGGING_RULES", "qt.qpa.gl=true");
+	qSetMessagePattern("[%{type}] %{appname} (%{file}:%{line}) - %{message}");
+
 	QSurfaceFormat format;
 	format.setVersion(3, 3);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 	QSurfaceFormat::setDefaultFormat(format);
 
 	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+	std::cout << "DEBUG: Enabled OpenGL context sharing" << std::endl;
+	
 	OpenWithApplication app(argc, args);
 
     QCommandLineParser* parser = get_command_line_parser();

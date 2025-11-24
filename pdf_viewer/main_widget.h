@@ -147,6 +147,7 @@ private:
 protected:
 
 	void focusInEvent(QFocusEvent* ev);
+	void showEvent(QShowEvent* ev) override;
 
 	void toggle_statusbar();
 	void toggle_titlebar();

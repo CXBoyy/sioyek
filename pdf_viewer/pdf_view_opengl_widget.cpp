@@ -2,6 +2,8 @@
 #include "path.h"
 #include <qcolor.h>
 #include <cmath>
+#include <iostream>
+#include <map>
 
 extern Path shader_path;
 extern float BACKGROUND_COLOR[3];
@@ -171,15 +173,24 @@ GLuint PdfViewOpenGLWidget::LoadShaders(Path vertex_file_path, Path fragment_fil
 }
 
 void PdfViewOpenGLWidget::initializeGL() {
+	std::cout << "DEBUG: initializeGL called for widget " << this << " (is_helper: " << is_helper << ")" << std::endl;
+	
 	is_opengl_initialized = true;
 
 	initializeOpenGLFunctions();
+	
+	// Check OpenGL errors
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		std::cout << "ERROR: OpenGL error after initializeOpenGLFunctions: " << err << " for widget " << this << std::endl;
+	}
 
 	if (!shared_gl_objects.is_initialized) {
 		// we initialize the shared opengl objects here. Ideally we should have initialized them before any object
 		// of this type was created but we could not use any OpenGL function before initalizeGL is called for the
 		// first time.
 
+		std::cout << "DEBUG: Initializing SHARED OpenGL objects (first time)" << std::endl;
 		shared_gl_objects.is_initialized = true;
 
 		//shared_gl_objects.rendered_program = LoadShaders(concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path, L"simple.fragment"));
@@ -188,7 +199,7 @@ void PdfViewOpenGLWidget::initializeGL() {
 		//shared_gl_objects.highlight_program = LoadShaders( concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path , L"highlight.fragment"));
 		//shared_gl_objects.vertical_line_program = LoadShaders(concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path , L"vertical_bar.fragment"));
 		//shared_gl_objects.vertical_line_dark_program = LoadShaders(concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path , L"vertical_bar_dark.fragment"));
-
+		
 		shared_gl_objects.rendered_program = LoadShaders(shader_path.slash(L"simple.vertex"),  shader_path.slash(L"simple.fragment"));
 		shared_gl_objects.rendered_dark_program = LoadShaders(shader_path.slash(L"simple.vertex"),  shader_path.slash(L"dark_mode.fragment"));
 		shared_gl_objects.unrendered_program = LoadShaders(shader_path.slash(L"simple.vertex"),  shader_path.slash(L"unrendered_page.fragment"));
@@ -222,7 +233,7 @@ void PdfViewOpenGLWidget::initializeGL() {
 
 	}
 
-	//vertex array objects can not be shared for some reason!
+	//vertex array objectscan not be shared for some reason!
 	glGenVertexArrays(1, &vertex_array_object);
 	glBindVertexArray(vertex_array_object);
 
@@ -366,6 +377,14 @@ void PdfViewOpenGLWidget::render_highlight_document(GLuint program, int page, fz
 }
 
 void PdfViewOpenGLWidget::paintGL() {
+	static int paint_count = 0;
+	static std::map<void*, int> widget_paint_counts;
+	widget_paint_counts[this]++;
+	
+	if (widget_paint_counts[this] % 100 == 1) {  // Log every 100th paint to avoid spam
+		std::cout << "DEBUG: paintGL called for widget " << this << " (is_helper: " << is_helper 
+		          << ", paint_count: " << widget_paint_counts[this] << ")" << std::endl;
+	}
 
 	QPainter painter(this);
 	QTextOption option;
@@ -383,7 +402,8 @@ PdfViewOpenGLWidget::PdfViewOpenGLWidget(DocumentView* document_view, PdfRendere
 	document_view(document_view),
 	pdf_renderer(pdf_renderer),
 	config_manager(config_manager),
-	is_helper(is_helper)
+	is_helper(is_helper
+	)
 {
 	creation_time = QDateTime::currentDateTime();
 
@@ -714,6 +734,7 @@ void PdfViewOpenGLWidget::render(QPainter* painter) {
 
 
 	if (!valid_document()) {
+		std::cout << "DEBUG: render() called on widget " << this << " but NO VALID DOCUMENT" << std::endl;
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
