@@ -284,7 +284,7 @@ node_modules/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 
-# Paket dependency manager
+# Paket ency manager
 .paket/paket.exe
 paket-files/
 
@@ -361,3 +361,5 @@ pdf_viewer/todo.txt
 sioyek_log.txt
 fast/*
 debuglibs/*
+
+sioyek-release-windows
