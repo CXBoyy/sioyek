@@ -1555,6 +1555,22 @@ void MainWidget::push_state(bool update) {
     }
 }
 
+void MainWidget::toggle_scrollbar()
+{
+}
+
+void MainWidget::update_scrollbar()
+{
+}
+
+void MainWidget::handle_portal_overview_update()
+{
+}
+
+void MainWidget::goto_overview()
+{
+}
+
 void MainWidget::next_state() {
     //update_current_history_index();
     if (current_history_index < (static_cast<int>(history.size())-1)) {
@@ -2565,6 +2581,26 @@ std::optional<std::wstring> MainWidget::get_paper_name_under_cursor() {
     }
 }
 
+void MainWidget::set_status_message(std::wstring new_status_string)
+{
+}
+
+void MainWidget::remove_self_from_windows()
+{
+}
+
+void MainWidget::handle_additional_command(std::wstring command_name, bool wait)
+{
+}
+
+void MainWidget::handle_keyboard_select(const std::wstring &text)
+{
+}
+
+void MainWidget::run_multiple_commands(const std::wstring &commands)
+{
+}
+
 void MainWidget::smart_jump_under_pos(WindowPos pos){
     if (!main_document_view_has_document()) {
         return;
@@ -3508,9 +3544,34 @@ void MainWidget::on_new_paper_added(const std::wstring& file_path) {
         invalidate_render();
     }
 }
-void MainWidget::handle_link_click(const PdfLink& link) {
+void MainWidget::scroll_overview_down()
+{
+}
+void MainWidget::scroll_overview_up()
+{
+}
+int MainWidget::get_current_page_number() const
+{
+    return 0;
+}
+void MainWidget::set_inverse_search_command(const std::wstring &new_command)
+{
+}
+bool MainWidget::execute_predefined_command(char symbol)
+{
+    return false;
+}
+int MainWidget::get_current_monitor_width()
+{
+    return 0;
+}
+void MainWidget::synctex_under_pos(WindowPos position)
+{
+}
+void MainWidget::handle_link_click(const PdfLink &link)
+{
 
-	if (link.uri.substr(0, 4).compare("http") == 0) {
+    if (link.uri.substr(0, 4).compare("http") == 0) {
 		open_web_url(utf8_decode(link.uri));
 		return;
 	}
