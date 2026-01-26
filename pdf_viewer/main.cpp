@@ -574,13 +574,22 @@ MainWidget* handle_args(const QStringList& arguments) {
 	}
 
 	if (should_create_new_window) {
+		//#BREAKPOINT - Second window creation starts here. Step through to watch Window 1.
+		std::cout << "DEBUG: ========================================" << std::endl;
 		std::cout << "DEBUG: Creating new window (total windows before: " << windows.size() << ")" << std::endl;
+		std::cout << "DEBUG: Copying from existing window: " << windows[0] << std::endl;
+		std::cout << "DEBUG: ========================================" << std::endl;
 		target_window = new MainWidget(windows[0]);
+		//#BREAKPOINT - New MainWidget created. Check if Window 1 is still visible.
+		std::cout << "DEBUG: New window object created: " << target_window << std::endl;
 		target_window->run_multiple_commands(STARTUP_COMMANDS);
 		target_window->apply_window_params_for_one_window_mode(true);
+		std::cout << "DEBUG: About to show() new window..." << std::endl;
 		target_window->show();
+		//#BREAKPOINT - After show(). Does Window 1 go blank at this exact moment?
 		windows.push_back(target_window);
 		std::cout << "DEBUG: New window created and shown (total windows now: " << windows.size() << ")" << std::endl;
+		std::cout << "DEBUG: ========================================" << std::endl;
 	}
 	if (target_window == nullptr) {
 		target_window = windows[0];
@@ -643,11 +652,13 @@ MainWidget* handle_args(const QStringList& arguments) {
 			target_window->do_synctex_forward_search(pdf_file_name, latex_file_name.value(), latex_line.value_or(0), latex_column.value_or(0));
 		}
     }
-    else {
+	else {
+		//#BREAKPOINT - Document being opened in window (new or existing)
+		std::cout << "DEBUG: Opening document in window " << target_window << ": " << pdf_file_name.c_str() << std::endl;
 		target_window->push_state();
-        target_window->open_document(pdf_file_name);
-    }
-
+		target_window->open_document(pdf_file_name);
+		std::cout << "DEBUG: Document opened successfully" << std::endl;
+	}
     invalidate_render();
 
     delete parser;

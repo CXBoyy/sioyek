@@ -173,7 +173,13 @@ GLuint PdfViewOpenGLWidget::LoadShaders(Path vertex_file_path, Path fragment_fil
 }
 
 void PdfViewOpenGLWidget::initializeGL() {
+	//#BREAKPOINT - First window will hit once, second window will hit here again
+	// Use Hit Count condition: Break when hit count == 2 to debug second window
+	std::cout << "DEBUG: ========================================" << std::endl;
 	std::cout << "DEBUG: initializeGL called for widget " << this << " (is_helper: " << is_helper << ")" << std::endl;
+	std::cout << "DEBUG: Current OpenGL context: " << QOpenGLContext::currentContext() << std::endl;
+	std::cout << "DEBUG: Shared objects initialized: " << shared_gl_objects.is_initialized << std::endl;
+	std::cout << "DEBUG: ========================================" << std::endl;
 	
 	is_opengl_initialized = true;
 
@@ -192,6 +198,8 @@ void PdfViewOpenGLWidget::initializeGL() {
 
 		std::cout << "DEBUG: Initializing SHARED OpenGL objects (first time)" << std::endl;
 		shared_gl_objects.is_initialized = true;
+		//#BREAKPOINT - This only runs for the first widget/window created
+		std::cout << "DEBUG: Creating SHARED GL resources (shaders, VBOs, UBOs)..." << std::endl;
 
 		//shared_gl_objects.rendered_program = LoadShaders(concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path, L"simple.fragment"));
 		//shared_gl_objects.rendered_dark_program = LoadShaders(concatenate_path(shader_path , L"simple.vertex"),  concatenate_path(shader_path, L"dark_mode.fragment"));
@@ -234,8 +242,17 @@ void PdfViewOpenGLWidget::initializeGL() {
 	}
 
 	//vertex array objectscan not be shared for some reason!
+	//#BREAKPOINT - Each window creates its OWN VAO (not shared). Check if VAO ID collides.
+	std::cout << "DEBUG: Creating per-widget VAO for widget " << this << std::endl;
 	glGenVertexArrays(1, &vertex_array_object);
+	std::cout << "DEBUG: Generated VAO ID: " << vertex_array_object << std::endl;
 	glBindVertexArray(vertex_array_object);
+	
+	// Check for OpenGL errors after VAO operations
+	GLenum vao_err = glGetError();
+	if (vao_err != GL_NO_ERROR) {
+		std::cout << "ERROR: OpenGL error after VAO creation: " << vao_err << std::endl;
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, shared_gl_objects.vertex_buffer_object);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -377,13 +394,18 @@ void PdfViewOpenGLWidget::render_highlight_document(GLuint program, int page, fz
 }
 
 void PdfViewOpenGLWidget::paintGL() {
+	//#BREAKPOINT - Watch which window stops rendering after second window opens
+	// Add condition: vertex_array_object == 1 to break only for first window
 	static int paint_count = 0;
 	static std::map<void*, int> widget_paint_counts;
 	widget_paint_counts[this]++;
 	
-	if (widget_paint_counts[this] % 100 == 1) {  // Log every 100th paint to avoid spam
+	// Log first 10 paints for each widget, then every 100th
+	if (widget_paint_counts[this] <= 10 || widget_paint_counts[this] % 100 == 1) {
 		std::cout << "DEBUG: paintGL called for widget " << this << " (is_helper: " << is_helper 
-		          << ", paint_count: " << widget_paint_counts[this] << ")" << std::endl;
+		          << ", VAO: " << vertex_array_object
+		          << ", paint_count: " << widget_paint_counts[this] 
+		          << ", context: " << QOpenGLContext::currentContext() << ")" << std::endl;
 	}
 
 	QPainter painter(this);
@@ -730,11 +752,26 @@ void PdfViewOpenGLWidget::render(QPainter* painter) {
 	painter->beginNativePainting();
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
+	
+	//#BREAKPOINT - Check if VAO is still valid when window goes blank
+	// After binding, check: glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &bound_vao)
 	glBindVertexArray(vertex_array_object);
+	
+	// Verify VAO binding succeeded
+	GLint bound_vao = 0;
+	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &bound_vao);
+	if (bound_vao != vertex_array_object) {
+		std::cout << "ERROR: VAO binding failed! Expected " << vertex_array_object 
+		          << " but got " << bound_vao << " for widget " << this << std::endl;
+	}
 
 
 	if (!valid_document()) {
-		std::cout << "DEBUG: render() called on widget " << this << " but NO VALID DOCUMENT" << std::endl;
+		std::cout << "ERROR: render() called on widget " << this << " but NO VALID DOCUMENT" << std::endl;
+		std::cout << "ERROR: document_view pointer: " << document_view << std::endl;
+		if (document_view) {
+			std::cout << "ERROR: current_document pointer: " << document_view->get_document() << std::endl;
+		}
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

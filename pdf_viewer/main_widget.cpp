@@ -321,7 +321,12 @@ void MainWidget::showEvent(QShowEvent* ev) {
 }
 
 MainWidget::MainWidget(MainWidget* other) : MainWidget(other->mupdf_context, other->db_manager, other->document_manager, other->config_manager, other->command_manager, other->input_handler, other->checksummer, other->should_quit) {
-    std::cout << "DEBUG: MainWidget copy constructor - copying from " << other << " to " << this << std::endl;
+    //#BREAKPOINT - Copy constructor called when creating second window
+    std::cout << "DEBUG: ========================================" << std::endl;
+    std::cout << "DEBUG: MainWidget COPY constructor - copying from " << other << " to " << this << std::endl;
+    std::cout << "DEBUG: Source window's opengl_widget: " << other->opengl_widget << std::endl;
+    std::cout << "DEBUG: Source window's document: " << (other->main_document_view ? other->main_document_view->get_document() : nullptr) << std::endl;
+    std::cout << "DEBUG: ========================================" << std::endl;
 }
 
 MainWidget::MainWidget(fz_context* mupdf_context,
@@ -361,11 +366,13 @@ MainWidget::MainWidget(fz_context* mupdf_context,
 
 
     main_document_view = new DocumentView(mupdf_context, db_manager, document_manager, config_manager, checksummer);
+    //#BREAKPOINT - About to create main OpenGL widget (will trigger initializeGL)
     std::cout << "DEBUG: Creating main opengl_widget for window " << this << std::endl;
     opengl_widget = new PdfViewOpenGLWidget(main_document_view, pdf_renderer, config_manager, false, this);
     std::cout << "DEBUG: Main opengl_widget created: " << opengl_widget << std::endl;
 
     helper_document_view = new DocumentView(mupdf_context, db_manager, document_manager, config_manager, checksummer);
+    //#BREAKPOINT - About to create helper OpenGL widget
     std::cout << "DEBUG: Creating helper opengl_widget for window " << this << std::endl;
     helper_opengl_widget = new PdfViewOpenGLWidget(helper_document_view, pdf_renderer, config_manager, true);
     std::cout << "DEBUG: Helper opengl_widget created: " << helper_opengl_widget << std::endl;
@@ -1091,6 +1098,11 @@ void MainWidget::open_document_with_hash(const std::string& path, std::optional<
 
 void MainWidget::open_document(const Path& path, std::optional<float> offset_x, std::optional<float> offset_y, std::optional<float> zoom_level) {
 
+    //#BREAKPOINT - Document being opened. Check if this affects other windows.
+    std::cout << "DEBUG: open_document called on window " << this << " with path: " << path.get_path().c_str() << std::endl;
+    std::cout << "DEBUG: Current opengl_widget: " << opengl_widget << std::endl;
+    std::cout << "DEBUG: Current document_view: " << main_document_view << std::endl;
+    
     //save the previous document state
     if (main_document_view) {
         main_document_view->persist();
@@ -1101,6 +1113,8 @@ void MainWidget::open_document(const Path& path, std::optional<float> offset_x, 
     }
 
     main_document_view->on_view_size_change(main_window_width, main_window_height);
+    //#BREAKPOINT - About to call document_view->open_document()
+    std::cout << "DEBUG: Calling main_document_view->open_document()..." << std::endl;
     main_document_view->open_document(path.get_path(), &this->is_render_invalidated);
     bool has_document = main_document_view_has_document();
 
