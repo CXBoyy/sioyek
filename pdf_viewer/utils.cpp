@@ -2223,3 +2223,38 @@ QString get_selected_stylesheet(bool nofont) {
         );
     }
 }
+
+bool CharacterAddress::advance(char c)
+{
+    return false;
+}
+
+bool CharacterAddress::backspace()
+{
+    return false;
+}
+
+bool CharacterAddress::next_char()
+{
+    return false;
+}
+
+bool CharacterAddress::next_line()
+{
+    return false;
+}
+
+bool CharacterAddress::next_block()
+{
+    return false;
+}
+
+bool CharacterAddress::next_page()
+{
+    return false;
+}
+
+float CharacterAddress::focus_offset()
+{
+    return 0.0f;
+}

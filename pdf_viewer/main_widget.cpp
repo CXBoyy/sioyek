@@ -157,6 +157,9 @@ void MainWidget::resizeEvent(QResizeEvent* resize_event) {
 
 }
 
+void MainWidget::changeEvent(QEvent *event)
+{
+}
 
 void MainWidget::set_overview_position(int page, float offset) {
     if (page >= 0) {
@@ -311,7 +314,12 @@ void MainWidget::closeEvent(QCloseEvent* close_event) {
     handle_close_event();
 }
 
-void MainWidget::showEvent(QShowEvent* ev) {
+void MainWidget::focusInEvent(QFocusEvent *ev)
+{
+}
+
+void MainWidget::showEvent(QShowEvent *ev)
+{
     std::cout << "DEBUG: showEvent called for MainWidget " << this << std::endl;
     std::cout << "DEBUG:   opengl_widget=" << opengl_widget << ", helper_opengl_widget=" << helper_opengl_widget << std::endl;
     if (opengl_widget) {
@@ -329,24 +337,71 @@ MainWidget::MainWidget(MainWidget* other) : MainWidget(other->mupdf_context, oth
     std::cout << "DEBUG: ========================================" << std::endl;
 }
 
-MainWidget::MainWidget(fz_context* mupdf_context,
-    DatabaseManager* db_manager,
-    DocumentManager* document_manager,
-    ConfigManager* config_manager,
-    CommandManager* command_manager,
-    InputHandler* input_handler,
-    CachedChecksummer* checksummer,
-    bool* should_quit_ptr,
-    QWidget* parent):
-    QWidget(parent),
-    mupdf_context(mupdf_context),
-    db_manager(db_manager),
-    document_manager(document_manager),
-    config_manager(config_manager),
-    input_handler(input_handler),
-    checksummer(checksummer),
-    should_quit(should_quit_ptr),
-    command_manager(command_manager)
+void MainWidget::save_auto_config()
+{
+}
+
+void MainWidget::handle_close_event()
+{
+}
+
+void MainWidget::return_to_last_visual_mark()
+{
+}
+
+bool MainWidget::is_visual_mark_mode()
+{
+    return false;
+}
+
+void MainWidget::reload()
+{
+}
+
+QString MainWidget::get_font_face_name()
+{
+    return QString();
+}
+
+void MainWidget::reset_highlight_links()
+{
+}
+
+void MainWidget::set_rect_select_mode(bool mode)
+{
+}
+
+void MainWidget::clear_selected_rect()
+{
+}
+
+bool MainWidget::get_selected_rect_document(int &out_page, fz_rect &out_rect)
+{
+    return false;
+}
+
+Document *MainWidget::doc()
+{
+    return nullptr;
+}
+
+MainWidget::MainWidget(fz_context *mupdf_context,
+                       DatabaseManager *db_manager,
+                       DocumentManager *document_manager,
+                       ConfigManager *config_manager,
+                       CommandManager *command_manager,
+                       InputHandler *input_handler,
+                       CachedChecksummer *checksummer,
+                       bool *should_quit_ptr,
+                       QWidget *parent) : QWidget(parent),
+                                          mupdf_context(mupdf_context),
+                                          db_manager(db_manager),
+                                          document_manager(document_manager),
+                                          config_manager(config_manager),
+                                          input_handler(input_handler),
+                                          checksummer(checksummer),
+                                          should_quit(should_quit_ptr),
+                                          command_manager(command_manager)
 {
     std::cout << "DEBUG: MainWidget constructor (full) - this=" << this << std::endl;
     setMouseTracking(true);
@@ -842,6 +897,10 @@ void MainWidget::move_document_screens(int num_screens) {
     move_document(0, move_amount);
 }
 
+void MainWidget::focus_text(int page, const std::wstring &text)
+{
+}
+
 //QString MainWidget::get_status_stylesheet() {
 //    if (STATUS_BAR_FONT_SIZE > -1) {
 //        QString	font_size_stylesheet = QString("font-size: %1px").arg(STATUS_BAR_FONT_SIZE);
@@ -862,7 +921,12 @@ void MainWidget::move_document_screens(int num_screens) {
 //
 //
 
-void MainWidget::on_config_file_changed(ConfigManager* new_config) {
+void MainWidget::move_visual_mark(int offset)
+{
+}
+
+void MainWidget::on_config_file_changed(ConfigManager *new_config)
+{
 
     status_label->setStyleSheet(get_status_stylesheet());
     status_label->setFont(QFont(get_font_face_name()));
@@ -2593,6 +2657,11 @@ void MainWidget::handle_additional_command(std::wstring command_name, bool wait)
 {
 }
 
+std::optional<DocumentPos> MainWidget::get_overview_position()
+{
+    return std::optional<DocumentPos>();
+}
+
 void MainWidget::handle_keyboard_select(const std::wstring &text)
 {
 }
@@ -2766,6 +2835,10 @@ void MainWidget::handle_portal() {
             Portal::with_src_offset(main_document_view->get_offset_y()));
     }
     validate_render();
+}
+
+void MainWidget::add_portal(std::wstring source_path, Portal new_link)
+{
 }
 
 void MainWidget::handle_pending_text_command(std::wstring text) {
@@ -2959,6 +3032,10 @@ void MainWidget::handle_pending_text_command(std::wstring text) {
         std::string config_name = current_pending_command->name.substr(config_prefix.size(), current_pending_command->name.size() - config_prefix.size());
         config_manager->deserialize_config(config_name, text);
     }
+}
+
+void MainWidget::handle_command_with_text(const Command *command, std::wstring text)
+{
 }
 
 void MainWidget::toggle_fullscreen() {
@@ -3188,7 +3265,14 @@ void MainWidget::execute_command(std::wstring command, std::wstring text, bool w
     }
 
 }
-void MainWidget::handle_paper_name_on_pointer(std::wstring paper_name, bool is_shift_pressed) {
+void MainWidget::toggle_statusbar()
+{
+}
+void MainWidget::toggle_titlebar()
+{
+}
+void MainWidget::handle_paper_name_on_pointer(std::wstring paper_name, bool is_shift_pressed)
+{
     if (paper_name.size() > 5) {
         char type;
         if (is_shift_pressed) {
@@ -3201,7 +3285,6 @@ void MainWidget::handle_paper_name_on_pointer(std::wstring paper_name, bool is_s
             search_custom_engine(paper_name, SEARCH_URLS[type - 'a']);
         }
     }
-
 }
 void MainWidget::move_vertical(float amount) {
     if (!smooth_scroll_mode) {
@@ -3565,6 +3648,10 @@ int MainWidget::get_current_monitor_width()
 {
     return 0;
 }
+int MainWidget::get_current_monitor_height()
+{
+    return 0;
+}
 void MainWidget::synctex_under_pos(WindowPos position)
 {
 }
@@ -3586,4 +3673,14 @@ void MainWidget::handle_link_click(const PdfLink &link)
 	offset_x = main_document_view->get_offset_x();
 
     long_jump_to_destination({ page, offset_x, offset_y });
+}
+
+std::wstring MainWidget::get_window_configuration_string()
+{
+    return std::wstring();
+}
+
+std::wstring MainWidget::get_serialized_configuration_string()
+{
+    return std::wstring();
 }
