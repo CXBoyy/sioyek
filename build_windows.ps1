@@ -13,7 +13,8 @@ Set-Location $scriptDir
 
 # One level up from script dir, then build\OUTNAME
 $outRoot = Join-Path $scriptDir "..\build"
-$OUTDIR  = Join-Path $outRoot $OUTNAME
+# $OUTDIR  = Join-Path $outRoot $OUTNAME
+$OUTDIR = Join-Path $scriptDir $OUTNAME
 
 # Log file lives next to the script during the build
 $ts = Get-Date -Format "yyyy-MM-dd_HH-mm"
@@ -42,7 +43,7 @@ if (Test-Path $globalLog) {
 
     # === qmake config depending on 'portable' flag ===
     if ($Mode -and $Mode.ToLower() -eq "portable") {
-        & qmake "-tp" "vc" "pdf_viewer_build_config.pro"
+        & qmake "-tp" "vc" "CONFIG+=debug" "pdf_viewer_build_config.pro"
     }
     else {
         & qmake "-tp" "vc" "DEFINES+=NON_PORTABLE" "pdf_viewer_build_config.pro"

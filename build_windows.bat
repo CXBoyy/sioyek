@@ -9,7 +9,7 @@ set "SCRIPT_DIR=%~dp0"
 set "OUTDIR=%SCRIPT_DIR%..\build\%OUTNAME%"
 
 cd mupdf\platform\win32\
-msbuild mupdf.sln /property:Configuration=Debug 
+msbuild mupdf.sln /property:Configuration=Debug /property:Platform=x64
 REM msbuild mupdf.sln /property:Configuration=Release
 cd ..\..\..
 
